@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build:
+      context: .
+      target: ${BACKEND_BUILD_TARGET:-prod}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - db_data:/app/data-sql
+    environment:
+      DATABASE_URL: "sqlite:////app/data-sql/tasks.db"
+      AUTO_COMPLETE_PROJECT: "false"
+
+volumes:
+  db_data:
+    driver: local
