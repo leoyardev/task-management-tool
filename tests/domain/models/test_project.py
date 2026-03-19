@@ -5,7 +5,7 @@ import pytest
 from datetime import datetime
 from uuid import UUID
 
-from src.domain.models.project import Project
+from src.domain.entities.project import Project
 from src.domain.events.events import ProjectCompleted, ProjectDeadlineChanged
 from src.domain.exceptions.exceptions import (
     InvalidOperationError,
