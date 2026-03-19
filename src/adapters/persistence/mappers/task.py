@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from src.adapters.persistence.mappers.utils import ensure_utc
 from src.adapters.persistence.models.task import TaskDBModel
 from src.domain.entities.task import Task
 
@@ -19,11 +20,11 @@ class TaskMapper:
             id=UUID(db_model.id),
             title=db_model.title,
             description=db_model.description,
-            deadline=db_model.deadline,
+            deadline=ensure_utc(db_model.deadline),
             completed=db_model.completed,
             project_id=UUID(db_model.project_id) if db_model.project_id else None,
-            created_at=db_model.created_at,
-            updated_at=db_model.updated_at,
+            created_at=ensure_utc(db_model.created_at),
+            updated_at=ensure_utc(db_model.updated_at),
         )
 
     @staticmethod
