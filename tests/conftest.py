@@ -15,6 +15,7 @@ from src.domain.ports.notification import NotificationPort
 from src.domain.ports.project import ProjectRepository
 from src.domain.ports.task import TaskRepository
 from src.infrastructure.database import Base, build_engine, build_session_factory
+from src.adapters.notification.console_notifier import ConsoleNotificationService
 
 NOW = datetime.now(UTC)
 PROJECT_DEADLINE = NOW + timedelta(days=30)
@@ -189,3 +190,8 @@ def make_task_row():
         return TaskDBModel(**{**defaults, **kwargs})
 
     return _make_task_row
+
+
+@pytest.fixture
+def notifier():
+    return ConsoleNotificationService()
