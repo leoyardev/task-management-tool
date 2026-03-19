@@ -1,21 +1,21 @@
 """
 Unit tests for application DTOs.
 """
-import pytest
+
 from datetime import datetime
-from uuid import uuid4, UUID
+from uuid import uuid4
+
+import pytest
 
 from src.application.dtos import (
     CreateProjectDTO,
-    UpdateProjectDTO,
     CreateTaskDTO,
+    UpdateProjectDTO,
     UpdateTaskDTO,
 )
 
 
-
 class TestCreateProjectDTO:
-
     def test_creates_with_required_fields(self):
         dto = CreateProjectDTO(
             title="Launch app",
@@ -33,9 +33,7 @@ class TestCreateProjectDTO:
             CreateProjectDTO(title="Launch app")
 
 
-
 class TestUpdateProjectDTO:
-
     def test_all_fields_optional(self):
         dto = UpdateProjectDTO()
         assert dto.title is None
@@ -60,9 +58,7 @@ class TestUpdateProjectDTO:
         assert dto.deadline == datetime(2025, 12, 1)
 
 
-
 class TestCreateTaskDTO:
-
     def test_creates_with_required_fields(self):
         dto = CreateTaskDTO(
             title="Write tests",
@@ -99,9 +95,7 @@ class TestCreateTaskDTO:
             CreateTaskDTO(title="Write tests")
 
 
-
 class TestUpdateTaskDTO:
-
     def test_all_fields_optional(self):
         dto = UpdateTaskDTO()
         assert dto.title is None

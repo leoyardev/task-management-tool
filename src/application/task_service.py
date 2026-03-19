@@ -2,9 +2,9 @@ from typing import Optional
 from uuid import UUID
 
 from src.application.dtos import CreateTaskDTO, UpdateTaskDTO
+from src.domain.entities.task import Task
 from src.domain.events.events import TaskReopened
 from src.domain.exceptions.exceptions import NotFoundError
-from src.domain.entities.task import Task
 from src.domain.ports.notification import NotificationPort
 from src.domain.ports.project import ProjectRepository
 from src.domain.ports.task import TaskRepository, TaskSpecification
@@ -27,7 +27,6 @@ class TaskService:
         self._notification = notification
         self._auto_complete_project = auto_complete_project
 
-
     def get_task(self, task_id: UUID) -> Task:
         task = self._task_repo.find_by_id(task_id)
         if not task:
@@ -36,7 +35,6 @@ class TaskService:
 
     def get_all_tasks(self, spec: Optional[TaskSpecification] = None) -> list[Task]:
         return self._task_repo.find_all(spec)
-
 
     def create_task(self, dto: CreateTaskDTO) -> Task:
         project_deadline = None
@@ -97,7 +95,6 @@ class TaskService:
         task = self.get_task(task_id)
         task.unlink_from_project()
         return self._task_repo.save(task)
-
 
     def _handle_auto_complete(self, task: Task) -> None:
         """

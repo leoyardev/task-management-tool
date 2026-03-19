@@ -3,21 +3,20 @@ Unit tests for domain exceptions.
 
 Verifies exception hierarchy, messages, and attributes.
 """
+
 import pytest
 
 from src.domain.exceptions.exceptions import (
-    DomainException,
-    NotFoundError,
     DeadlineViolationError,
+    DomainException,
+    InvalidOperationError,
+    NotFoundError,
     ProjectCompletionError,
     TaskAlreadyCompletedError,
-    InvalidOperationError,
 )
 
 
-
 class TestDomainException:
-
     def test_is_base_exception(self):
         exc = DomainException("something went wrong")
         assert isinstance(exc, Exception)
@@ -34,10 +33,7 @@ class TestDomainException:
             raise NotFoundError("Task", "123")
 
 
-
-
 class TestNotFoundError:
-
     def test_message_includes_entity_and_id(self):
         exc = NotFoundError("Task", "abc-123")
         assert "Task" in str(exc)
@@ -61,12 +57,9 @@ class TestNotFoundError:
 
 
 class TestDeadlineViolationError:
-
     def test_is_raised_with_message(self):
         with pytest.raises(DeadlineViolationError, match="exceeds"):
-            raise DeadlineViolationError(
-                "Task deadline exceeds project deadline."
-            )
+            raise DeadlineViolationError("Task deadline exceeds project deadline.")
 
     def test_can_be_caught_as_domain_exception(self):
         with pytest.raises(DomainException):
@@ -78,9 +71,7 @@ class TestDeadlineViolationError:
         assert str(exc) == msg
 
 
-
 class TestProjectCompletionError:
-
     def test_is_raised_with_message(self):
         with pytest.raises(ProjectCompletionError, match="open"):
             raise ProjectCompletionError(
@@ -97,9 +88,7 @@ class TestProjectCompletionError:
         assert str(exc) == msg
 
 
-
 class TestTaskAlreadyCompletedError:
-
     def test_is_raised_with_message(self):
         with pytest.raises(TaskAlreadyCompletedError):
             raise TaskAlreadyCompletedError("Task 'Write tests' is already completed.")
@@ -114,9 +103,7 @@ class TestTaskAlreadyCompletedError:
         assert str(exc) == msg
 
 
-
 class TestInvalidOperationError:
-
     def test_is_raised_with_message(self):
         with pytest.raises(InvalidOperationError):
             raise InvalidOperationError("Project is already completed.")

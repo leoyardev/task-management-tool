@@ -1,6 +1,5 @@
-
 from dataclasses import dataclass, field
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -57,9 +56,7 @@ class Project:
         open_task_count is passed in by the application layer
         """
         if self.completed:
-            raise InvalidOperationError(
-                f"Project '{self.title}' is already completed."
-            )
+            raise InvalidOperationError(f"Project '{self.title}' is already completed.")
         if open_task_count > 0:
             raise ProjectCompletionError(
                 f"Cannot complete project '{self.title}': "
@@ -90,7 +87,7 @@ class Project:
 
         if title is None and deadline is None:
             raise InvalidOperationError("No fields provided to update.")
-        
+
         if title is not None:
             self.title = title
 
@@ -106,7 +103,6 @@ class Project:
                         new_deadline=deadline,
                     )
                 )
-
 
     def pull_events(self) -> list[DomainEvent]:
         """

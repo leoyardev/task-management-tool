@@ -1,21 +1,21 @@
 """
 Unit tests for TaskRepository specifications and port contract.
 """
-import pytest
-from datetime import datetime, timedelta, UTC
+
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
+
+import pytest
 
 from src.domain.entities.task import Task
 from src.domain.ports.task import (
-    TaskRepository,
+    BelongsToProjectSpec,
     CompletedTaskSpec,
     OpenTaskSpec,
     OverdueTaskSpec,
-    BelongsToProjectSpec,
+    TaskRepository,
     UnlinkedTaskSpec,
 )
-
-
 
 PROJECT_ID = uuid4()
 NOW = datetime.now(UTC)
@@ -49,25 +49,32 @@ def make_linked_task(**kwargs) -> Task:
 
 
 class TestTaskRepositoryPort:
-
     def test_cannot_instantiate_without_implementation(self):
         with pytest.raises(TypeError):
             TaskRepository()
 
     def test_concrete_class_missing_method_raises(self):
         class IncompleteRepo(TaskRepository):
-            def save(self, task): pass
-            def find_by_id(self, task_id): pass
-            def find_all(self, spec=None): pass
-            def count_open_by_project(self, project_id): pass
-            def find_exceeding_deadline(self, project_id, deadline): pass
+            def save(self, task):
+                pass
+
+            def find_by_id(self, task_id):
+                pass
+
+            def find_all(self, spec=None):
+                pass
+
+            def count_open_by_project(self, project_id):
+                pass
+
+            def find_exceeding_deadline(self, project_id, deadline):
+                pass
 
         with pytest.raises(TypeError):
             IncompleteRepo()
 
 
 class TestSpecifications:
-
     def test_completed_spec_matches_completed_task(self):
         assert CompletedTaskSpec().is_satisfied_by(make_completed_task()) is True
 
@@ -90,7 +97,9 @@ class TestSpecifications:
         assert OverdueTaskSpec().is_satisfied_by(task) is False
 
     def test_belongs_to_project_spec_matches_correct_project(self):
-        assert BelongsToProjectSpec(PROJECT_ID).is_satisfied_by(make_linked_task()) is True
+        assert (
+            BelongsToProjectSpec(PROJECT_ID).is_satisfied_by(make_linked_task()) is True
+        )
 
     def test_belongs_to_project_spec_does_not_match_unlinked(self):
         assert BelongsToProjectSpec(PROJECT_ID).is_satisfied_by(make_task()) is False
@@ -103,7 +112,6 @@ class TestSpecifications:
 
 
 class TestComposition:
-
     def test_and_both_satisfied(self):
         task = make_overdue_task(
             project_id=PROJECT_ID,

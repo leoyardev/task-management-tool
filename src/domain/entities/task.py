@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -42,7 +42,6 @@ class Task:
         compare=False,
     )
 
-
     @staticmethod
     def create(
         title: str,
@@ -61,7 +60,6 @@ class Task:
         )
         task._validate_deadline()
         return task
-
 
     def _validate_deadline(self) -> None:
         """
@@ -85,9 +83,7 @@ class Task:
             )
         self.completed = True
         self.updated_at = datetime.now(UTC)
-        self._events.append(
-            TaskCompleted(task_id=self.id, task_title=self.title)
-        )
+        self._events.append(TaskCompleted(task_id=self.id, task_title=self.title))
 
     def reopen(self) -> None:
         """
@@ -97,9 +93,7 @@ class Task:
         """
         self.completed = False
         self.updated_at = datetime.now(UTC)
-        self._events.append(
-            TaskReopened(task_id=self.id, project_id=self.project_id)
-        )
+        self._events.append(TaskReopened(task_id=self.id, project_id=self.project_id))
 
     def update(
         self,
@@ -156,7 +150,6 @@ class Task:
         self.project_id = None
         self.project_deadline = None
         self.updated_at = datetime.now(UTC)
-
 
     def pull_events(self) -> list[DomainEvent]:
         """

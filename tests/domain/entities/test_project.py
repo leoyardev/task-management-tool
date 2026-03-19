@@ -1,9 +1,11 @@
 """
 Unit tests for the Project domain entity.
 """
-import pytest
+
 from datetime import timedelta
 from uuid import UUID
+
+import pytest
 
 from src.domain.events.events import ProjectCompleted, ProjectDeadlineChanged
 from src.domain.exceptions.exceptions import (
@@ -12,9 +14,7 @@ from src.domain.exceptions.exceptions import (
 )
 
 
-
 class TestProjectCreate:
-
     def test_creates_with_title_and_deadline(self, make_project, now):
         deadline = now + timedelta(days=10)
         project = make_project(title="Launch", deadline=deadline)
@@ -40,9 +40,7 @@ class TestProjectCreate:
         assert make_project().pull_events() == []
 
 
-
 class TestMarkComplete:
-
     def test_marks_project_as_completed(self, make_project):
         project = make_project()
         project.mark_complete(open_task_count=0)
@@ -89,9 +87,7 @@ class TestMarkComplete:
             project.mark_complete(open_task_count=5)
 
 
-
 class TestReopen:
-
     def test_sets_completed_to_false(self, make_project):
         project = make_project()
         project.mark_complete(open_task_count=0)
@@ -123,9 +119,7 @@ class TestReopen:
         assert project.completed is True
 
 
-
 class TestUpdate:
-
     def test_updates_title(self, make_project):
         project = make_project(title="Old")
         project.update(title="New")
@@ -148,14 +142,18 @@ class TestUpdate:
         with pytest.raises(InvalidOperationError):
             make_project().update()
 
-    def test_earlier_deadline_emits_project_deadline_changed(self, make_project, project_deadline):
+    def test_earlier_deadline_emits_project_deadline_changed(
+        self, make_project, project_deadline
+    ):
         project = make_project(deadline=project_deadline)
         project.update(deadline=project_deadline - timedelta(days=5))
         events = project.pull_events()
         assert len(events) == 1
         assert isinstance(events[0], ProjectDeadlineChanged)
 
-    def test_deadline_changed_event_has_correct_values(self, make_project, project_deadline):
+    def test_deadline_changed_event_has_correct_values(
+        self, make_project, project_deadline
+    ):
         old = project_deadline
         new = project_deadline - timedelta(days=5)
         project = make_project(deadline=old)
@@ -187,9 +185,7 @@ class TestUpdate:
         assert project.updated_at >= before
 
 
-
 class TestPullEvents:
-
     def test_returns_pending_events(self, make_project):
         project = make_project()
         project.mark_complete(open_task_count=0)

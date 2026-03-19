@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from typing import Optional
 from uuid import UUID
 
 from src.domain.entities.task import Task
-
 
 
 class TaskSpecification(ABC):
@@ -24,7 +23,6 @@ class TaskSpecification(ABC):
 
     def __invert__(self) -> "NotSpecification":
         return NotSpecification(self)
-
 
 
 class AndSpecification(TaskSpecification):
@@ -51,7 +49,6 @@ class NotSpecification(TaskSpecification):
 
     def is_satisfied_by(self, task: Task) -> bool:
         return not self._spec.is_satisfied_by(task)
-
 
 
 class CompletedTaskSpec(TaskSpecification):
@@ -90,7 +87,6 @@ class UnlinkedTaskSpec(TaskSpecification):
 
     def is_satisfied_by(self, task: Task) -> bool:
         return task.project_id is None
-
 
 
 class TaskRepository(ABC):

@@ -1,15 +1,16 @@
 """
 Unit tests for NotificationPort contract.
 """
+
+from uuid import uuid4
+
 import pytest
 
 from src.domain.events.events import TaskCompleted
 from src.domain.ports.notification import NotificationPort
-from uuid import uuid4
 
 
 class TestNotificationPort:
-
     def test_cannot_instantiate_without_implementation(self):
         with pytest.raises(TypeError):
             NotificationPort()
@@ -23,7 +24,8 @@ class TestNotificationPort:
 
     def test_concrete_class_with_notify_can_instantiate(self):
         class FullNotifier(NotificationPort):
-            def notify(self, event): pass
+            def notify(self, event):
+                pass
 
         assert FullNotifier() is not None
 

@@ -1,14 +1,13 @@
 """
 Unit tests for ProjectRepository port contract.
 """
+
 import pytest
 
 from src.domain.ports.project import ProjectRepository
 
 
-
 class TestProjectRepositoryPort:
-
     def test_cannot_instantiate_without_implementation(self):
         with pytest.raises(TypeError):
             ProjectRepository()
@@ -18,6 +17,7 @@ class TestProjectRepositoryPort:
             def save(self, project): ...
             def find_by_id(self, project_id): ...
             def find_all(self): ...
+
             # delete() missing
 
         with pytest.raises(TypeError):

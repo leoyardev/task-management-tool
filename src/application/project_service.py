@@ -1,12 +1,12 @@
 from uuid import UUID
 
 from src.application.dtos import CreateProjectDTO, UpdateProjectDTO
+from src.domain.entities.project import Project
 from src.domain.events.events import ProjectDeadlineChanged
 from src.domain.exceptions.exceptions import NotFoundError
-from src.domain.entities.project import Project
 from src.domain.ports.notification import NotificationPort
 from src.domain.ports.project import ProjectRepository
-from src.domain.ports.task import TaskRepository, BelongsToProjectSpec
+from src.domain.ports.task import BelongsToProjectSpec, TaskRepository
 
 
 class ProjectService:
@@ -37,7 +37,6 @@ class ProjectService:
         self.get_project(project_id)  # raises NotFoundError if missing
         return self._task_repo.find_all(BelongsToProjectSpec(project_id))
 
-
     def create_project(self, dto: CreateProjectDTO) -> Project:
         project = Project.create(
             title=dto.title,
@@ -67,7 +66,6 @@ class ProjectService:
         saved = self._project_repo.save(project)
         self._dispatch(project.pull_events())
         return saved
-
 
     def _cascade_deadline(self, project_id: UUID, new_deadline) -> None:
         """
