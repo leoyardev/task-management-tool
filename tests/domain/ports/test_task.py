@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, UTC
 from uuid import uuid4
 
 from src.domain.entities.task import Task
-from src.domain.ports.task_repo import (
+from src.domain.ports.task import (
     TaskRepository,
     CompletedTaskSpec,
     OpenTaskSpec,

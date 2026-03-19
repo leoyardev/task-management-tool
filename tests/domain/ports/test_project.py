@@ -3,7 +3,7 @@ Unit tests for ProjectRepository port contract.
 """
 import pytest
 
-from src.domain.ports.project_repo import ProjectRepository
+from src.domain.ports.project import ProjectRepository
 
 
 
