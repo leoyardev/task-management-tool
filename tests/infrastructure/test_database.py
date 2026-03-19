@@ -118,7 +118,7 @@ class TestGetSession:
 
     def test_exception_is_re_raised(self, test_session_factory):
         with pytest.raises(ValueError, match="specific error"):
-            with get_session(test_session_factory) as sess:
+            with get_session(test_session_factory) as _:
                 raise ValueError("specific error")
 
 

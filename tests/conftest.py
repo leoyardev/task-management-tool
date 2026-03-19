@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 
+from src.adapters.notification.console_notifier import ConsoleNotificationService
 from src.adapters.persistence.models import ProjectDBModel, TaskDBModel
 from src.domain.entities.project import Project
 from src.domain.entities.task import Task
@@ -15,7 +16,6 @@ from src.domain.ports.notification import NotificationPort
 from src.domain.ports.project import ProjectRepository
 from src.domain.ports.task import TaskRepository
 from src.infrastructure.database import Base, build_engine, build_session_factory
-from src.adapters.notification.console_notifier import ConsoleNotificationService
 
 NOW = datetime.now(UTC)
 PROJECT_DEADLINE = NOW + timedelta(days=30)
@@ -170,7 +170,7 @@ def session(session_factory):
 def make_project_row():
     def _make_project_row(**kwargs) -> ProjectDBModel:
         defaults = dict(
-            id="proj-1",
+            id=str(uuid4()),
             title="Test project",
             deadline=datetime.now(UTC) + timedelta(days=30),
         )
@@ -183,7 +183,7 @@ def make_project_row():
 def make_task_row():
     def _make_task_row(**kwargs) -> TaskDBModel:
         defaults = dict(
-            id="task-1",
+            id=str(uuid4()),
             title="Test task",
             deadline=datetime.now(UTC) + timedelta(days=7),
         )

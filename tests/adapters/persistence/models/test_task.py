@@ -47,16 +47,19 @@ class TestTaskDBModelSchema:
 
 class TestTaskDBModelIndexes:
     def test_idx_tasks_project_id_exists(self, engine):
-        index_names = {i["name"] for i in inspect(engine).get_indexes("tasks")}
-        assert "idx_tasks_project_id" in index_names
+        assert "idx_tasks_project_id" in {
+            i["name"] for i in inspect(engine).get_indexes("tasks")
+        }
 
     def test_idx_tasks_completed_exists(self, engine):
-        index_names = {i["name"] for i in inspect(engine).get_indexes("tasks")}
-        assert "idx_tasks_completed" in index_names
+        assert "idx_tasks_completed" in {
+            i["name"] for i in inspect(engine).get_indexes("tasks")
+        }
 
     def test_idx_tasks_deadline_exists(self, engine):
-        index_names = {i["name"] for i in inspect(engine).get_indexes("tasks")}
-        assert "idx_tasks_deadline" in index_names
+        assert "idx_tasks_deadline" in {
+            i["name"] for i in inspect(engine).get_indexes("tasks")
+        }
 
     def test_idx_tasks_project_id_covers_correct_column(self, engine):
         indexes = {i["name"]: i for i in inspect(engine).get_indexes("tasks")}
@@ -73,28 +76,32 @@ class TestTaskDBModelIndexes:
 
 class TestTaskDBModelCRUD:
     def test_insert_and_retrieve(self, session, make_task_row):
-        session.add(make_task_row(title="My task"))
+        task = make_task_row(title="My task")
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").title == "My task"
+        assert session.get(TaskDBModel, task.id).title == "My task"
 
     def test_completed_defaults_to_false(self, session, make_task_row):
-        session.add(make_task_row())
+        task = make_task_row()
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").completed is False
+        assert session.get(TaskDBModel, task.id).completed is False
 
     def test_description_defaults_to_none(self, session, make_task_row):
-        session.add(make_task_row())
+        task = make_task_row()
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").description is None
+        assert session.get(TaskDBModel, task.id).description is None
 
     def test_project_id_defaults_to_none(self, session, make_task_row):
-        session.add(make_task_row())
+        task = make_task_row()
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").project_id is None
+        assert session.get(TaskDBModel, task.id).project_id is None
 
     def test_update_title(self, session, make_task_row):
         task = make_task_row()
@@ -104,7 +111,7 @@ class TestTaskDBModelCRUD:
         task.title = "Updated"
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").title == "Updated"
+        assert session.get(TaskDBModel, task.id).title == "Updated"
 
     def test_update_completed(self, session, make_task_row):
         task = make_task_row()
@@ -114,7 +121,7 @@ class TestTaskDBModelCRUD:
         task.completed = True
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").completed is True
+        assert session.get(TaskDBModel, task.id).completed is True
 
     def test_update_description(self, session, make_task_row):
         task = make_task_row()
@@ -124,7 +131,7 @@ class TestTaskDBModelCRUD:
         task.description = "Some details"
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").description == "Some details"
+        assert session.get(TaskDBModel, task.id).description == "Some details"
 
     def test_delete_task(self, session, make_task_row):
         task = make_task_row()
@@ -134,11 +141,11 @@ class TestTaskDBModelCRUD:
         session.delete(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1") is None
+        assert session.get(TaskDBModel, task.id) is None
 
     def test_query_all_tasks(self, session, make_task_row):
-        session.add(make_task_row(id="t1", title="Task 1"))
-        session.add(make_task_row(id="t2", title="Task 2"))
+        session.add(make_task_row())
+        session.add(make_task_row())
         session.flush()
 
         assert len(session.query(TaskDBModel).all()) == 2
@@ -146,16 +153,18 @@ class TestTaskDBModelCRUD:
 
 class TestTaskDBModelDefaults:
     def test_created_at_is_set_automatically(self, session, make_task_row):
-        session.add(make_task_row())
+        task = make_task_row()
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").created_at is not None
+        assert session.get(TaskDBModel, task.id).created_at is not None
 
     def test_updated_at_is_set_automatically(self, session, make_task_row):
-        session.add(make_task_row())
+        task = make_task_row()
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").updated_at is not None
+        assert session.get(TaskDBModel, task.id).updated_at is not None
 
 
 class TestTaskDBModelConstraints:
@@ -182,11 +191,13 @@ class TestTaskDBModelConstraints:
             session.flush()
 
     def test_duplicate_id_raises(self, session, make_task_row):
-        session.add(make_task_row(id="dup"))
+        task = make_task_row()
+        session.add(task)
         session.flush()
+        session.expunge(task)  # remove from identity map
 
         with pytest.raises(Exception):
-            session.add(make_task_row(id="dup", title="Duplicate"))
+            session.add(make_task_row(id=task.id))
             session.flush()
 
     def test_fk_violation_raises(self, session, make_task_row):
@@ -195,54 +206,60 @@ class TestTaskDBModelConstraints:
             session.flush()
 
     def test_nullable_project_id_allowed(self, session, make_task_row):
-        session.add(make_task_row(project_id=None))
+        task = make_task_row(project_id=None)
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").project_id is None
+        assert session.get(TaskDBModel, task.id).project_id is None
 
 
 class TestTaskDBModelRelationship:
     def test_task_project_is_none_when_unlinked(self, session, make_task_row):
-        session.add(make_task_row())
+        task = make_task_row()
+        session.add(task)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").project is None
+        assert session.get(TaskDBModel, task.id).project is None
 
     def test_task_project_returns_linked_project(
         self, session, make_project_row, make_task_row
     ):
-        session.add(make_project_row())
-        session.add(make_task_row(project_id="proj-1"))
+        project = make_project_row()
+        task = make_task_row(project_id=project.id)
+        session.add(project)
+        session.add(task)
         session.flush()
 
-        result = session.get(TaskDBModel, "task-1")
+        result = session.get(TaskDBModel, task.id)
         assert result.project is not None
-        assert result.project.id == "proj-1"
-        assert result.project.title == "Test project"
+        assert result.project.id == project.id
+        assert result.project.title == project.title
 
     def test_unlink_task_from_project(self, session, make_project_row, make_task_row):
-        session.add(make_project_row())
-        task = make_task_row(project_id="proj-1")
+        project = make_project_row()
+        task = make_task_row(project_id=project.id)
+        session.add(project)
         session.add(task)
         session.flush()
 
         task.project_id = None
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1").project_id is None
+        assert session.get(TaskDBModel, task.id).project_id is None
 
     def test_multiple_tasks_linked_to_same_project(
         self, session, make_project_row, make_task_row
     ):
-        session.add(make_project_row())
-        session.add(make_task_row(id="t1", project_id="proj-1"))
-        session.add(make_task_row(id="t2", project_id="proj-1"))
+        project = make_project_row()
+        session.add(project)
+        session.add(make_task_row(project_id=project.id))
+        session.add(make_task_row(project_id=project.id))
         session.flush()
 
-        results = session.query(TaskDBModel).filter_by(project_id="proj-1").all()
+        results = session.query(TaskDBModel).filter_by(project_id=project.id).all()
         assert len(results) == 2
 
     def test_repr(self, make_task_row):
-        task = make_task_row(id="abc", title="My task")
-        assert "abc" in repr(task)
+        task = make_task_row(title="My task")
+        assert task.id in repr(task)
         assert "My task" in repr(task)

@@ -7,15 +7,15 @@ Uses pytest caplog to capture log output — no mocks needed.
 
 from datetime import timedelta
 
-from src.domain.ports.notification import NotificationPort
 from src.domain.events.events import (
     DeadlineApproaching,
+    DomainEvent,
     ProjectCompleted,
     ProjectDeadlineChanged,
     TaskCompleted,
     TaskReopened,
-    DomainEvent,
 )
+from src.domain.ports.notification import NotificationPort
 
 
 class TestConsoleNotificationServiceContract:
@@ -41,7 +41,6 @@ class TestTaskCompleted:
         with caplog.at_level("INFO"):
             notifier.notify(event)
         assert task_title in caplog.text
-
 
 
 class TestTaskReopened:
@@ -78,7 +77,6 @@ class TestProjectCompleted:
         assert str(project_id) in caplog.text
 
 
-
 class TestProjectDeadlineChanged:
     def test_logs_at_warning_level(self, notifier, caplog, project_id, now):
         event = ProjectDeadlineChanged(
@@ -112,7 +110,6 @@ class TestProjectDeadlineChanged:
             notifier.notify(event)
         assert old.isoformat() in caplog.text
         assert new.isoformat() in caplog.text
-
 
 
 class TestDeadlineApproaching:

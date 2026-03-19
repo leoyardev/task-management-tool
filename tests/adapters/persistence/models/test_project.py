@@ -46,14 +46,15 @@ class TestProjectDBModelCRUD:
         session.add(project)
         session.flush()
 
-        result = session.get(ProjectDBModel, "proj-1")
+        result = session.get(ProjectDBModel, project.id)
         assert result.title == "My project"
 
     def test_completed_defaults_to_false(self, session, make_project_row):
-        session.add(make_project_row())
+        project = make_project_row()
+        session.add(project)
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1").completed is False
+        assert session.get(ProjectDBModel, project.id).completed is False
 
     def test_update_title(self, session, make_project_row):
         project = make_project_row()
@@ -63,7 +64,7 @@ class TestProjectDBModelCRUD:
         project.title = "Updated"
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1").title == "Updated"
+        assert session.get(ProjectDBModel, project.id).title == "Updated"
 
     def test_update_completed(self, session, make_project_row):
         project = make_project_row()
@@ -73,7 +74,7 @@ class TestProjectDBModelCRUD:
         project.completed = True
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1").completed is True
+        assert session.get(ProjectDBModel, project.id).completed is True
 
     def test_delete_project(self, session, make_project_row):
         project = make_project_row()
@@ -83,11 +84,11 @@ class TestProjectDBModelCRUD:
         session.delete(project)
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1") is None
+        assert session.get(ProjectDBModel, project.id) is None
 
     def test_query_all_projects(self, session, make_project_row):
-        session.add(make_project_row(id="p1", title="Project 1"))
-        session.add(make_project_row(id="p2", title="Project 2"))
+        session.add(make_project_row())
+        session.add(make_project_row())
         session.flush()
 
         assert len(session.query(ProjectDBModel).all()) == 2
@@ -95,22 +96,25 @@ class TestProjectDBModelCRUD:
 
 class TestProjectDBModelDefaults:
     def test_created_at_is_set_automatically(self, session, make_project_row):
-        session.add(make_project_row())
+        project = make_project_row()
+        session.add(project)
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1").created_at is not None
+        assert session.get(ProjectDBModel, project.id).created_at is not None
 
     def test_updated_at_is_set_automatically(self, session, make_project_row):
-        session.add(make_project_row())
+        project = make_project_row()
+        session.add(project)
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1").updated_at is not None
+        assert session.get(ProjectDBModel, project.id).updated_at is not None
 
     def test_completed_server_default_is_false(self, session, make_project_row):
-        session.add(make_project_row())
+        project = make_project_row()
+        session.add(project)
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1").completed is False
+        assert session.get(ProjectDBModel, project.id).completed is False
 
 
 class TestProjectDBModelConstraints:
@@ -137,49 +141,54 @@ class TestProjectDBModelConstraints:
             session.flush()
 
     def test_duplicate_id_raises(self, session, make_project_row):
-        session.add(make_project_row(id="dup-1"))
+        project = make_project_row()
+        session.add(project)
         session.flush()
+        session.expunge(project)  # remove from identity map
 
         with pytest.raises(Exception):
-            session.add(make_project_row(id="dup-1", title="Duplicate"))
+            session.add(make_project_row(id=project.id))
             session.flush()
 
 
 class TestProjectDBModelRelationship:
     def test_project_has_empty_tasks_by_default(self, session, make_project_row):
-        session.add(make_project_row())
+        project = make_project_row()
+        session.add(project)
         session.flush()
 
-        assert session.get(ProjectDBModel, "proj-1").tasks == []
+        assert session.get(ProjectDBModel, project.id).tasks == []
 
     def test_project_tasks_returns_linked_tasks(
         self, session, make_project_row, make_task_row
     ):
-        session.add(make_project_row())
-        session.add(make_task_row(project_id="proj-1", id="t1", title="Task 1"))
-        session.add(make_task_row(project_id="proj-1", id="t2", title="Task 2"))
+        project = make_project_row()
+        session.add(project)
+        session.add(make_task_row(project_id=project.id, title="Task 1"))
+        session.add(make_task_row(project_id=project.id, title="Task 2"))
         session.flush()
 
-        result = session.get(ProjectDBModel, "proj-1")
+        result = session.get(ProjectDBModel, project.id)
         assert len(result.tasks) == 2
         assert {t.title for t in result.tasks} == {"Task 1", "Task 2"}
 
     def test_deleting_project_does_not_cascade_to_tasks(
         self, session, make_project_row, make_task_row
     ):
-        session.add(make_project_row())
-        task = make_task_row(project_id="proj-1")
+        project = make_project_row()
+        task = make_task_row(project_id=project.id)
+        session.add(project)
         session.add(task)
         session.flush()
 
         task.project_id = None
         session.flush()
-        session.delete(session.get(ProjectDBModel, "proj-1"))
+        session.delete(project)
         session.flush()
 
-        assert session.get(TaskDBModel, "task-1") is not None
+        assert session.get(TaskDBModel, task.id) is not None
 
     def test_repr(self, make_project_row):
-        project = make_project_row(id="abc", title="My project")
-        assert "abc" in repr(project)
+        project = make_project_row(title="My project")
+        assert project.id in repr(project)
         assert "My project" in repr(project)
