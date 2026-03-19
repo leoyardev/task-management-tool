@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from src.adapters.persistence.mappers.utils import ensure_utc
 from src.adapters.persistence.models.project import ProjectDBModel
 from src.domain.entities.project import Project
 
@@ -18,10 +19,10 @@ class ProjectMapper:
         return Project(
             id=UUID(db_model.id),
             title=db_model.title,
-            deadline=db_model.deadline,
+            deadline=ensure_utc(db_model.deadline),
             completed=db_model.completed,
-            created_at=db_model.created_at,
-            updated_at=db_model.updated_at,
+            created_at=ensure_utc(db_model.created_at),
+            updated_at=ensure_utc(db_model.updated_at),
         )
 
     @staticmethod
