@@ -3,13 +3,18 @@ Shared fixtures and helpers across all test modules.
 """
 
 from datetime import UTC, datetime, timedelta
-from unittest.mock import create_autospec
+from unittest.mock import MagicMock, create_autospec
 from uuid import uuid4
 
 import pytest
+from sqlalchemy.orm import Session
 
 from src.adapters.notification.console_notifier import ConsoleNotificationService
 from src.adapters.persistence.models import ProjectDBModel, TaskDBModel
+from src.adapters.persistence.repositories.project import SqlProjectRepository
+from src.adapters.persistence.repositories.task import SqlTaskRepository
+from src.application.project_service import ProjectService
+from src.application.task_service import TaskService
 from src.domain.entities.project import Project
 from src.domain.entities.task import Task
 from src.domain.ports.notification import NotificationPort
@@ -195,3 +200,34 @@ def make_task_row():
 @pytest.fixture
 def notifier():
     return ConsoleNotificationService()
+
+
+@pytest.fixture
+def config():
+    from config import AppConfig
+
+    return AppConfig()
+
+
+@pytest.fixture
+def mock_session():
+    return MagicMock(spec=Session)
+
+
+@pytest.fixture
+def project_service(mock_session):
+    return ProjectService(
+        project_repo=SqlProjectRepository(mock_session),
+        task_repo=SqlTaskRepository(mock_session),
+        notification=ConsoleNotificationService(),
+    )
+
+
+@pytest.fixture
+def task_service(mock_session, config):
+    return TaskService(
+        task_repo=SqlTaskRepository(mock_session),
+        project_repo=SqlProjectRepository(mock_session),
+        notification=ConsoleNotificationService(),
+        auto_complete_project=config.auto_complete_project,
+    )
