@@ -7,8 +7,11 @@ from unittest.mock import MagicMock, create_autospec
 from uuid import uuid4
 
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from main import create_app
+from src.adapters.api.dependencies import get_project_service, get_task_service
 from src.adapters.notification.console_notifier import ConsoleNotificationService
 from src.adapters.persistence.models import ProjectDBModel, TaskDBModel
 from src.adapters.persistence.repositories.project import SqlProjectRepository
@@ -231,3 +234,21 @@ def task_service(mock_session, config):
         notification=ConsoleNotificationService(),
         auto_complete_project=config.auto_complete_project,
     )
+
+
+@pytest.fixture
+def mock_project_service():
+    return create_autospec(ProjectService)
+
+
+@pytest.fixture
+def mock_task_service():
+    return create_autospec(TaskService)
+
+
+@pytest.fixture
+def api_client(mock_project_service, mock_task_service):
+    app = create_app()
+    app.dependency_overrides[get_project_service] = lambda: mock_project_service
+    app.dependency_overrides[get_task_service] = lambda: mock_task_service
+    return TestClient(app)
