@@ -8,7 +8,11 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from src.adapters.api.v1.schemas.project import ProjectCreate, ProjectResponse
+from src.adapters.api.v1.schemas.project import (
+    ProjectCreate,
+    ProjectResponse,
+    ProjectUpdate,
+)
 
 
 class TestProjectCreate:
@@ -87,3 +91,42 @@ class TestProjectResponse:
         assert "completed" in data
         assert "created_at" in data
         assert "updated_at" in data
+
+
+class TestProjectUpdate:
+    def test_valid_with_title_only(
+        self,
+    ):
+        schema = ProjectUpdate(title="New title")
+        assert schema.title == "New title"
+        assert schema.deadline is None
+
+    def test_valid_with_deadline_only(self, project_deadline):
+        schema = ProjectUpdate(deadline=project_deadline)
+        assert schema.deadline == project_deadline
+        assert schema.title is None
+
+    def test_valid_with_both_fields(self, project_deadline):
+        schema = ProjectUpdate(title="New title", deadline=project_deadline)
+        assert schema.title == "New title"
+        assert schema.deadline == project_deadline
+
+    def test_raises_when_no_fields_provided(self):
+        with pytest.raises(Exception, match="At least one field"):
+            ProjectUpdate()
+
+    def test_empty_title_raises(
+        self,
+    ):
+        with pytest.raises(Exception):
+            ProjectUpdate(title="")
+
+    def test_title_exceeding_max_length_raises(
+        self,
+    ):
+        with pytest.raises(Exception):
+            ProjectUpdate(title="x" * 256)
+
+    def test_title_at_max_length_is_valid(self):
+        schema = ProjectUpdate(title="x" * 255)
+        assert len(schema.title) == 255
