@@ -175,7 +175,6 @@ docker compose --profile dev up
 ```bash
 uv run pytest
 uv run alembic upgrade head
-uv run python -c "import backend"
 ```
 
 ### Stop everything
