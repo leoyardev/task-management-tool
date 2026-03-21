@@ -226,6 +226,27 @@ All settings are loaded from environment variables by `AppConfig`. Never read `o
 
 Set via `docker-compose.yml` environment section or your `.env` file.
 
+### Auto-complete project
+
+By default completing a task does not automatically complete its project — you must call `PATCH /api/v1/projects/{id}/complete` explicitly once all tasks are done.
+
+To enable automatic project completion, set `AUTO_COMPLETE_PROJECT=true` in your environment. When enabled, completing the last open task in a project will automatically mark the project as completed and emit a `ProjectCompleted` event.
+
+**Development:**
+
+Update your `.env` file:
+```bash
+BACKEND_BUILD_TARGET=dev
+AUTO_COMPLETE_PROJECT=true
+```
+
+**Production via docker-compose.yml:**
+```yaml
+  app:
+    environment:
+      DATABASE_URL: "sqlite:////app/data-sql/tasks.db"
+      AUTO_COMPLETE_PROJECT: "true"
+```
 ---
 
 ## Design Decisions
