@@ -21,28 +21,6 @@ A production-grade REST API for managing tasks and projects, built with Python a
 
 This project follows **Hexagonal Architecture** (also known as Ports & Adapters), keeping the domain and business logic completely isolated from infrastructure and framework concerns.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                        Adapters                         │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────────┐  │
-│  │   FastAPI   │  │  SQLAlchemy  │  │    Console    │  │
-│  │   Routers   │  │Repositories  │  │   Notifier    │  │
-│  └──────┬──────┘  └──────┬───────┘  └───────┬───────┘  │
-│         │                │                   │          │
-├─────────┼────────────────┼───────────────────┼──────────┤
-│         │         Application Layer           │          │
-│  ┌──────▼────────────────────────────────────▼──────┐   │
-│  │          ProjectService  │  TaskService          │   │
-│  └─────────────────────────┬─────────────────────┘  │   │
-│                            │                         │   │
-├────────────────────────────┼─────────────────────────┤   │
-│                            │  Domain Layer            │   │
-│  ┌─────────────────────────▼──────────────────────┐  │   │
-│  │   Project  │  Task  │  Events  │  Ports        │  │   │
-│  └────────────────────────────────────────────────┘  │   │
-└───────────────────────────────────────────────────────┘
-```
-
 Each layer has a strict dependency rule — inner layers never know about outer layers:
 
 - **Domain** — pure Python, zero external dependencies. Entities, events, exceptions, and port interfaces.
