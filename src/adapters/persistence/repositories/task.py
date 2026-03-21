@@ -5,9 +5,10 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from src.adapters.persistence.mappers.task import TaskMapper
+from src.adapters.persistence.models.project import ProjectDBModel
 from src.adapters.persistence.models.task import TaskDBModel
 from src.domain.entities.task import Task
-from src.domain.ports.task import TaskRepository, TaskSpecification
+from src.domain.ports.task import TaskRepository
 
 
 class SqlTaskRepository(TaskRepository):
@@ -27,13 +28,30 @@ class SqlTaskRepository(TaskRepository):
         self._session.flush()
         return task
 
+    def _get_project_deadline(self, project_id: Optional[str]) -> Optional[datetime]:
+        if not project_id:
+            return None
+        project = self._session.get(ProjectDBModel, project_id)
+        return project.deadline if project else None
+
     def find_by_id(self, task_id: UUID) -> Optional[Task]:
         db_model = self._session.get(TaskDBModel, str(task_id))
-        return TaskMapper.to_domain(db_model) if db_model else None
+        if not db_model:
+            return None
+        return TaskMapper.to_domain(
+            db_model,
+            project_deadline=self._get_project_deadline(db_model.project_id),
+        )
 
-    def find_all(self, spec: Optional[TaskSpecification] = None) -> list[Task]:
+    def find_all(self, spec=None) -> list[Task]:
         rows = self._session.query(TaskDBModel).all()
-        tasks = [TaskMapper.to_domain(row) for row in rows]
+        tasks = [
+            TaskMapper.to_domain(
+                row,
+                project_deadline=self._get_project_deadline(row.project_id),
+            )
+            for row in rows
+        ]
         if spec:
             tasks = [t for t in tasks if spec.is_satisfied_by(t)]
         return tasks
@@ -43,7 +61,7 @@ class SqlTaskRepository(TaskRepository):
             self._session.query(TaskDBModel)
             .filter(
                 TaskDBModel.project_id == str(project_id),
-                TaskDBModel.completed == False,  # noqa: E712
+                TaskDBModel.completed.is_(False),
             )
             .count()
         )

@@ -3,6 +3,7 @@ from contextlib import contextmanager
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 
 class Base(DeclarativeBase):
@@ -29,15 +30,19 @@ def build_engine(database_url: str):
     the URL starts with 'sqlite'.
     """
     connect_args = {}
+    engine_kwargs = {}
+
     if database_url.startswith("sqlite"):
         # Required when the same connection is shared across threads
         # which FastAPI does via its dependency injection system
         connect_args["check_same_thread"] = False
+        engine_kwargs["poolclass"] = StaticPool
 
     engine = create_engine(
         database_url,
         connect_args=connect_args,
         echo=False,
+        **engine_kwargs,
     )
 
     if database_url.startswith("sqlite"):

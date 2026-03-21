@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from src.adapters.persistence.mappers.utils import ensure_utc
@@ -11,11 +13,10 @@ class TaskMapper:
     """
 
     @staticmethod
-    def to_domain(db_model: TaskDBModel) -> Task:
-        """
-        DB row → domain entity.
-        Called after every SELECT.
-        """
+    def to_domain(
+        db_model: TaskDBModel,
+        project_deadline: Optional[datetime] = None,
+    ) -> Task:
         return Task(
             id=UUID(db_model.id),
             title=db_model.title,
@@ -23,6 +24,7 @@ class TaskMapper:
             deadline=ensure_utc(db_model.deadline),
             completed=db_model.completed,
             project_id=UUID(db_model.project_id) if db_model.project_id else None,
+            project_deadline=ensure_utc(project_deadline),  # ← add this
             created_at=ensure_utc(db_model.created_at),
             updated_at=ensure_utc(db_model.updated_at),
         )
