@@ -7,8 +7,10 @@ requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.18.4",
     "fastapi>=0.135.1",
+    "gunicorn>=25.1.0",
     "httpx>=0.28.1",
     "pydantic>=2.12.5",
+    "uvicorn>=0.42.0",
 ]
 
 [dependency-groups]

@@ -1,9 +1,9 @@
 {
   "name": "task-management-tool",
   "dockerComposeFile": "../docker-compose.yml",
-  "service": "backend",
+  "service": "dev",
   "workspaceFolder": "/app",
-  "runServices": ["backend"],
+  "runServices": ["dev"],
   "overrideCommand": false,
   "shutdownAction": "none",
   "customizations": {

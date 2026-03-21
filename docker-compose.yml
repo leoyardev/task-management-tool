@@ -1,11 +1,36 @@
-version: "3.9"
-
 services:
 
-  backend:
+  migrate:
     build:
       context: .
-      target: ${BACKEND_BUILD_TARGET:-prod}
+      target: prod
+    volumes:
+      - .:/app
+      - db_data:/app/data-sql
+    environment:
+      DATABASE_URL: "sqlite:////app/data-sql/tasks.db"
+    command: uv run alembic upgrade head
+
+  dev:
+    build:
+      context: .
+      target: dev
+    volumes:
+      - .:/app
+      - db_data:/app/data-sql
+    environment:
+      DATABASE_URL: "sqlite:////app/data-sql/tasks.db"
+      AUTO_COMPLETE_PROJECT: "false"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    profiles:
+      - dev
+
+  app:
+    build:
+      context: .
+      target: prod
     ports:
       - "8000:8000"
     volumes:
@@ -14,6 +39,9 @@ services:
     environment:
       DATABASE_URL: "sqlite:////app/data-sql/tasks.db"
       AUTO_COMPLETE_PROJECT: "false"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   db_data:
