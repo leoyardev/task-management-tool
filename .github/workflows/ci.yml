@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run test suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build dev container
+        run: docker compose --profile dev build
+
+      - name: Run migrations
+        run: docker compose --profile dev run --rm migrate
+
+      - name: Run linting
+        run: docker compose --profile dev run --rm dev uv run ruff check .
+
+      - name: Check formatting
+        run: docker compose --profile dev run --rm dev uv run ruff format . --check
+
+      - name: Run tests
+        run: docker compose --profile dev run --rm dev uv run pytest
+      - name: Tear down
+        if: always()
+        run: docker compose down --remove-orphans --volumes
